@@ -1,0 +1,20 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.4.RELEASE'
+	id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.alpajazel'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+}
