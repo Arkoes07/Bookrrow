@@ -1,9 +1,8 @@
 package com.alpajazel.bookrrow.databases;
 
-import com.alpajazel.bookrrow.enums.TransactionStatus;
-import com.alpajazel.bookrrow.models.Book;
-import com.alpajazel.bookrrow.models.Consumer;
-import com.alpajazel.bookrrow.models.Transaction;
+import com.alpajazel.bookrrow.enums.*;
+import com.alpajazel.bookrrow.exceptions.BookAlreadyExistsException;
+import com.alpajazel.bookrrow.models.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -77,26 +76,58 @@ public class DatabaseTransaction extends DatabaseConnection {
     }
 
 
-}
 
-//    private static final ArrayList<Transaction> TRANSACTION_DATABASE = new ArrayList<>();
-//    private static int LAST_TRANSACTION_ID = 0;
-//
-//    public static int getLastTransactionId() {
-//        return LAST_TRANSACTION_ID;
-//    }
-//
-//    public static boolean addTransaction(Transaction transaction) throws BookAlreadyExistsException {
-//        TRANSACTION_DATABASE.add(transaction);
-//        LAST_TRANSACTION_ID = transaction.getTransaction_id();
-//        return true;
-//    }
-//
-//    public static Transaction getTransactionFromId(int transaction_id){
-//        for(Transaction t : TRANSACTION_DATABASE){
-//            if(t.getTransaction_id() == transaction_id){
-//                return t;
-//            }
-//        }
-//        return null;
-//    }
+    private Book getBook(int book_id) throws SQLException {
+        Book book = null;
+        int year=0, owner_id=0;
+        String title="", author="", description="",language="",type="",genre="",book_status="";
+        PreparedStatement st = getConn().prepareStatement("SELECT * FROM book where book_id=?;");
+        st.setInt(1,book_id);
+        ResultSet rs = st.executeQuery();
+        while(rs.next()){
+            title = rs.getString("title");
+            author = rs.getString("author");
+            description = rs.getString("description");
+            language = rs.getString("language");
+            year = rs.getInt("year");
+            type =rs.getString("type");
+            genre = rs.getString("genre");
+            owner_id = rs.getInt("owner_id");
+            book_status = rs.getString("book_status");
+        }
+        Consumer consumer = getConsumer(owner_id);
+        if(type.equals("FICTION")){
+            book = new Fiction(book_id, title, author, description, Language.valueOf(language), year, BookStatus.valueOf(book_status), consumer, Genre.valueOf(genre));
+        }
+        else if(type.equals("NONFICTION")){
+            book = new NonFiction(book_id, title, author, description, Language.valueOf(language),year, BookStatus.valueOf(book_status),consumer);
+        }
+        return book;
+    }
+
+    public Transaction borrow(int book_id, int borrower_id) {
+        int id = 0;
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement("INSERT INTO transaction (book_id, borrower_id) values (?,?) RETURNING transaction_id;");
+            st.setInt(1,book_id);
+            st.setInt(2, borrower_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                id = rs.getInt("transaction_id");
+            }
+            Book book = getBook(book_id);
+            Consumer consumer = getConsumer(borrower_id);
+            transaction = new Transaction(id, book, consumer);
+            st.close();
+            rs.close();
+            return transaction;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transaction;
+    }
+
+
+}
