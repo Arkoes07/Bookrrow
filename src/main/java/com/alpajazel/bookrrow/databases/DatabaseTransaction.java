@@ -1,17 +1,14 @@
 package com.alpajazel.bookrrow.databases;
 
-import com.alpajazel.bookrrow.enums.BookStatus;
-import com.alpajazel.bookrrow.enums.BookType;
-import com.alpajazel.bookrrow.enums.Genre;
-import com.alpajazel.bookrrow.enums.Language;
-import com.alpajazel.bookrrow.exceptions.BookAlreadyExistsException;
-import com.alpajazel.bookrrow.models.*;
+import com.alpajazel.bookrrow.enums.TransactionStatus;
+import com.alpajazel.bookrrow.models.Book;
+import com.alpajazel.bookrrow.models.Consumer;
+import com.alpajazel.bookrrow.models.Transaction;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;import java.util.ArrayList;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class DatabaseTransaction extends DatabaseConnection {
     private Consumer getConsumer(int consumerId) throws SQLException {
@@ -37,47 +34,69 @@ public class DatabaseTransaction extends DatabaseConnection {
         return consumer;
     }
 
-    private Book getBook(int book_id) throws SQLException {
-        Book book = null;
-        int year=0, owner_id=0;
-        String title="", author="", description="",language="",type="",genre="",book_status="";
-        PreparedStatement st = getConn().prepareStatement("SELECT * FROM book where book_id=?;");
-        st.setInt(1,book_id);
-        ResultSet rs = st.executeQuery();
-        while(rs.next()){
-            title = rs.getString("title");
-            author = rs.getString("author");
-            description = rs.getString("description");
-            language = rs.getString("language");
-            year = rs.getInt("year");
-            type =rs.getString("type");
-            genre = rs.getString("genre");
-            owner_id = rs.getInt("owner_id");
-            book_status = rs.getString("book_status");
+    public ArrayList<Transaction> getIncomingRequest (int id) throws SQLException {
+        PreparedStatement stmt = null;
+        String sql = "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date"+
+                " from transaction natural join book "+
+                "where transaction_status='PENDING' and owner_id=?;";
+
+        stmt = getConn().prepareStatement(sql);
+        stmt.setInt(1,id);
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        ResultSet resultSet = stmt.executeQuery();
+        while (resultSet.next()){
+            int transactionId = resultSet.getInt("transaction_id");
+
+            int bookId = resultSet.getInt("book_id");
+            Book book = getBook(bookId);
+
+            int ownerId = resultSet.getInt("owner_id");
+
+            int borrowerId = resultSet.getInt("borrower_id");
+            Consumer borrower = getConsumer(borrowerId);
+
+            String transactionStatusRtv = resultSet.getString("transaction_status");
+            TransactionStatus transactionStatus = TransactionStatus.valueOf(transactionStatusRtv);
+
+            Date requestDateRtv = resultSet.getDate("request_date");
+            Calendar requestDate = new GregorianCalendar();
+            requestDate.setTime(requestDateRtv);
+
+            Date startDateRtv = resultSet.getDate("start_date");
+            Calendar startDate = new GregorianCalendar();
+            startDate.setTime(startDateRtv);
+
+            Date finishDateRtv = resultSet.getDate("finish_date");
+            Calendar finishDate = new GregorianCalendar();
+            finishDate.setTime(finishDateRtv);
+
+            Transaction transaction = new Transaction(transactionId,book,borrower,transactionStatus,requestDate,startDate,finishDate);
+            transactions.add(transaction);
         }
-        Consumer consumer = getConsumer(owner_id);
-        if(type.equals("FICTION")){
-            book = new Fiction(book_id, title, author, description, Language.valueOf(language), year, BookStatus.valueOf(book_status), consumer, Genre.valueOf(genre));
-        }
-        else if(type.equals("NONFICTION")){
-            book = new NonFiction(book_id, title, author, description, Language.valueOf(language),year, BookStatus.valueOf(book_status),consumer);
-        }
-        return book;
+        return transactions;
     }
 
-//    public Transaction borrow(int book_id, int borrower_id) throws SQLException {
-//        int id = 0;
-//
-//        PreparedStatement st = getConn().prepareStatement("INSERT INTO transaction (book_id, borrower_id) values (?,?) RETURNING transaction_id;");
-//        st.setInt(1,book_id);
-//        st.setInt(2, borrower_id);
-//        ResultSet rs = st.executeQuery();
-//        while (rs.next()){
-//            id = rs.getInt("transaction_id");
-//        }
-//        Transaction transaction = new Transaction(id, book_id, borrower_id);
-//        st.close();
-//        rs.close();
-//        return transaction;
-//    }
+
 }
+
+//    private static final ArrayList<Transaction> TRANSACTION_DATABASE = new ArrayList<>();
+//    private static int LAST_TRANSACTION_ID = 0;
+//
+//    public static int getLastTransactionId() {
+//        return LAST_TRANSACTION_ID;
+//    }
+//
+//    public static boolean addTransaction(Transaction transaction) throws BookAlreadyExistsException {
+//        TRANSACTION_DATABASE.add(transaction);
+//        LAST_TRANSACTION_ID = transaction.getTransaction_id();
+//        return true;
+//    }
+//
+//    public static Transaction getTransactionFromId(int transaction_id){
+//        for(Transaction t : TRANSACTION_DATABASE){
+//            if(t.getTransaction_id() == transaction_id){
+//                return t;
+//            }
+//        }
+//        return null;
+//    }
