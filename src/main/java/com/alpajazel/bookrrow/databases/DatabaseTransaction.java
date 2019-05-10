@@ -89,5 +89,24 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transaction;
     }
 
-
+    public Transaction reject(int transaction_id){
+        int id = 0, book_id=0, borrower_id=0;
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement("UPDATE transaction set transaction_status = 'REJECTED' where transaction_id=? RETURNING book_id, borrower_id;");
+            st.setInt(1,transaction_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                book_id = rs.getInt("book_id");
+                borrower_id = rs.getInt("borrower_id");
+            }
+            Book book = getBook(book_id);
+            Consumer consumer = getConsumer(borrower_id);
+            transaction = new Transaction(transaction_id, book, consumer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transaction;
+    }
 }

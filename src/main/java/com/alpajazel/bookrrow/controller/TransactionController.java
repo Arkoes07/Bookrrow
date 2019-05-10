@@ -24,6 +24,11 @@ public class TransactionController {
         return transaction;
     }
 
-//    @RequestMapping(value = "/reject", method = RequestMethod.POST)
-//    public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id)
+    @RequestMapping(value = "/reject", method = RequestMethod.POST)
+    public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id){
+        dt.connect();
+        Transaction transaction = dt.reject(transaction_id);
+        dt.disconnect();
+        return transaction;
+    }
 }
