@@ -1,7 +1,9 @@
 package com.alpajazel.bookrrow.databases;
 
-import com.alpajazel.bookrrow.enums.*;
-import com.alpajazel.bookrrow.exceptions.BookAlreadyExistsException;
+import com.alpajazel.bookrrow.enums.BookStatus;
+import com.alpajazel.bookrrow.enums.Genre;
+import com.alpajazel.bookrrow.enums.Language;
+import com.alpajazel.bookrrow.enums.TransactionStatus;
 import com.alpajazel.bookrrow.models.*;
 
 import java.sql.*;
@@ -77,10 +79,118 @@ public class DatabaseTransaction extends DatabaseConnection {
                 finishDate = null;
             }
 
-            Transaction transaction = new Transaction(transactionId,book,borrower,transactionStatus,requestDate,startDate,finishDate);
-            transactions.add(transaction);
+                Transaction transaction = new Transaction(transactionId, book, borrower, transactionStatus, requestDate, startDate, finishDate);
+                transactions.add(transaction);
+            }
+            stmt.close();
+            return transactions;
+    }
+
+    public ArrayList<Transaction> getIncomingOngoing(int id) {
+        PreparedStatement stmt = null;
+        String sql =
+                "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date" +
+                        "from transaction natural join book " +
+                        "where transaction_status='ONGOING' and owner_id=?;";
+        try {
+            stmt = getConn().prepareStatement(sql);
+            stmt.setInt(1, id);
+            ArrayList<Transaction> transactions = new ArrayList<>();
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()) {
+                int transactionId = resultSet.getInt("transaction_id");
+
+                int bookId = resultSet.getInt("book_id");
+                Book book = getBook(bookId);
+
+                int ownerId = resultSet.getInt("owner_id");
+
+                int borrowerId = resultSet.getInt("borrower_id");
+                Consumer borrower = getConsumer(borrowerId);
+
+                String transactionStatusRtv = resultSet.getString("transaction_status");
+                TransactionStatus transactionStatus = TransactionStatus.valueOf(transactionStatusRtv);
+
+                Date requestDateRtv = resultSet.getDate("request_date");
+                Calendar requestDate = new GregorianCalendar();
+                requestDate.setTime(requestDateRtv);
+
+                Date startDateRtv = resultSet.getDate("start_date");
+                Calendar startDate = new GregorianCalendar();
+                if (startDateRtv != null) {
+                    startDate.setTime(startDateRtv);
+                } else {
+                    startDate = null;
+                }
+
+                Date finishDateRtv = resultSet.getDate("finish_date");
+                Calendar finishDate = new GregorianCalendar();
+                if (finishDateRtv != null) {
+                    finishDate.setTime(finishDateRtv);
+                } else {
+                    finishDate = null;
+                }
+
+                Transaction transaction = new Transaction(transactionId, book, borrower, transactionStatus, requestDate, startDate, finishDate);
+                transactions.add(transaction);
+            }
+            stmt.close();
+            return transactions;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return transactions;
+    }
+
+    public ArrayList<Transaction> getOutgoingOngoing(int id) {
+        PreparedStatement stmt = null;
+        String sql = "select * from transaction where borrower_id = ? and transaction_status='ONGOING';";
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        try {
+            stmt = getConn().prepareStatement(sql);
+            stmt.setInt(1, id);
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()) {
+                int transactionId = resultSet.getInt("transaction_id");
+
+                int bookId = resultSet.getInt("book_id");
+                Book book = getBook(bookId);
+
+                int borrowerId = resultSet.getInt("borrower_id");
+                Consumer borrower = getConsumer(borrowerId);
+
+                String transactionStatusRtv = resultSet.getString("transaction_status");
+                TransactionStatus transactionStatus = TransactionStatus.valueOf(transactionStatusRtv);
+
+                Date requestDateRtv = resultSet.getDate("request_date");
+                Calendar requestDate = new GregorianCalendar();
+                requestDate.setTime(requestDateRtv);
+
+                Date startDateRtv = resultSet.getDate("start_date");
+                Calendar startDate = new GregorianCalendar();
+                if (startDateRtv != null) {
+                    startDate.setTime(startDateRtv);
+                } else {
+                    startDate = null;
+                }
+
+                Date finishDateRtv = resultSet.getDate("finish_date");
+                Calendar finishDate = new GregorianCalendar();
+                if (finishDateRtv != null) {
+                    finishDate.setTime(finishDateRtv);
+                } else {
+                    finishDate = null;
+                }
+
+                Transaction transaction = new Transaction(transactionId, book, borrower, transactionStatus, requestDate, startDate, finishDate);
+                transactions.add(transaction);
+            }
+            stmt.close();
+            return transactions;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return transactions;
+        }
     }
 
     private Book getBook(int book_id) throws SQLException {
