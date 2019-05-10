@@ -63,11 +63,19 @@ public class DatabaseTransaction extends DatabaseConnection {
 
             Date startDateRtv = resultSet.getDate("start_date");
             Calendar startDate = new GregorianCalendar();
-            startDate.setTime(startDateRtv);
+            if(startDateRtv!=null){
+                startDate.setTime(startDateRtv);
+            }else {
+                startDate = null;
+            }
 
             Date finishDateRtv = resultSet.getDate("finish_date");
             Calendar finishDate = new GregorianCalendar();
-            finishDate.setTime(finishDateRtv);
+            if(finishDateRtv!=null){
+                finishDate.setTime(finishDateRtv);
+            }else {
+                finishDate = null;
+            }
 
             Transaction transaction = new Transaction(transactionId,book,borrower,transactionStatus,requestDate,startDate,finishDate);
             transactions.add(transaction);
