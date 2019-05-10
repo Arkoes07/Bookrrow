@@ -38,13 +38,36 @@ public class TransactionController {
         return transactions;
     }
 
-//    @RequestMapping(value = "/reject", method = RequestMethod.POST)
-//    public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id)
     @RequestMapping(value = "/reject", method = RequestMethod.POST)
     public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id){
         dt.connect();
         Transaction transaction = dt.reject(transaction_id);
         dt.disconnect();
         return transaction;
+    }
+
+    @RequestMapping(value = "/accept", method = RequestMethod.POST)
+    public Transaction accept(@RequestParam(value = "transaction_id") int transaction_id){
+        dt.connect();
+        Transaction transaction = dt.accept(transaction_id);
+        dt.disconnect();
+        return transaction;
+    }
+
+    @RequestMapping(value = "/finish", method = RequestMethod.POST)
+    public Transaction finish(@RequestParam(value = "transaction_id") int transaction_id){
+        dt.connect();
+        Transaction transaction = dt.finish(transaction_id);
+        dt.disconnect();
+        return transaction;
+    }
+
+    @RequestMapping(value="/outgoinghistory/{borrower_id}", method = RequestMethod.GET)
+    public ArrayList<Transaction> getOutgoingHistory (@PathVariable int borrower_id){
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        dt.connect();
+        transactions = dt.getOutgoingHistory(borrower_id);
+        dt.disconnect();
+        return transactions;
     }
 }

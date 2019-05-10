@@ -11,7 +11,7 @@ public class Transaction {
     private TransactionStatus transactionStatus;
     private Calendar requestDate;
     private Calendar finishDate;
-    private Calendar borrowerDate;
+    private Calendar startDate;
 
     public Transaction(int id, Book book, Consumer borrower) {
         this.id = id;
@@ -19,14 +19,14 @@ public class Transaction {
         this.borrower = borrower;
     }
 
-    public Transaction(int id, Book book, Consumer borrower, TransactionStatus transactionStatus, Calendar requestDate, Calendar finishDate, Calendar borrowerDate) {
+    public Transaction(int id, Book book, Consumer borrower, TransactionStatus transactionStatus, Calendar requestDate, Calendar startDate, Calendar finishDate) {
         this.id = id;
         this.book = book;
         this.borrower = borrower;
         this.transactionStatus = transactionStatus;
         this.requestDate = requestDate;
         this.finishDate = finishDate;
-        this.borrowerDate = borrowerDate;
+        this.startDate = startDate;
     }
 
     public int getId() {
@@ -53,7 +53,7 @@ public class Transaction {
         return finishDate;
     }
 
-    public Calendar getBorrowerDate() {
-        return borrowerDate;
+    public Calendar getStartDate() {
+        return startDate;
     }
 }

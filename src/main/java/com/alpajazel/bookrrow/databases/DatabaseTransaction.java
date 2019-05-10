@@ -83,8 +83,6 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transactions;
     }
 
-
-
     private Book getBook(int book_id) throws SQLException {
         Book book = null;
         int year=0, owner_id=0;
@@ -156,5 +154,94 @@ public class DatabaseTransaction extends DatabaseConnection {
             e.printStackTrace();
         }
         return transaction;
+    }
+
+    public Transaction accept(int transaction_id){
+        int id = 0, book_id=0, borrower_id=0;
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement("UPDATE transaction set transaction_status = 'ONGOING' where transaction_id=? RETURNING book_id, borrower_id;");
+            st.setInt(1,transaction_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                book_id = rs.getInt("book_id");
+                borrower_id = rs.getInt("borrower_id");
+            }
+            Book book = getBook(book_id);
+            Consumer consumer = getConsumer(borrower_id);
+            transaction = new Transaction(transaction_id, book, consumer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transaction;
+    }
+
+    public Transaction finish(int transaction_id){
+        int id = 0, book_id=0, borrower_id=0;
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement("UPDATE transaction set transaction_status = 'FINISHED' where transaction_id=? RETURNING book_id, borrower_id;");
+            st.setInt(1,transaction_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                book_id = rs.getInt("book_id");
+                borrower_id = rs.getInt("borrower_id");
+            }
+            Book book = getBook(book_id);
+            Consumer consumer = getConsumer(borrower_id);
+            transaction = new Transaction(transaction_id, book, consumer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transaction;
+    }
+
+    public ArrayList<Transaction> getOutgoingHistory(int borrower_id){
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        int id=0,book_id=0,transaction_id=0;
+        String transaction_status="";
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement(" SELECT * FROM transaction where borrower_id=? AND (transaction_status='REJECTED' OR transaction_status='FINISHED');");
+            st.setInt(1,borrower_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                transaction_id = rs.getInt("transaction_id");
+                book_id = rs.getInt("book_id");
+                transaction_status = rs.getString("transaction_status");
+
+                Date requestDateRtv = rs.getDate("request_date");
+                Calendar requestDate = new GregorianCalendar();
+                requestDate.setTime(requestDateRtv);
+
+                Date startDateRtv = rs.getDate("start_date");
+                Calendar startDate = new GregorianCalendar();
+                if(startDateRtv!=null){
+                    startDate.setTime(startDateRtv);
+                }else {
+                    startDate = null;
+                }
+
+                Date finishDateRtv = rs.getDate("finish_date");
+                Calendar finishDate = new GregorianCalendar();
+                if(finishDateRtv!=null){
+                    finishDate.setTime(finishDateRtv);
+                }else {
+                    finishDate = null;
+                }
+
+                Book book = getBook(book_id);
+                Consumer consumer = getConsumer(borrower_id);
+                transaction = new Transaction(transaction_id, book, consumer, TransactionStatus.valueOf(transaction_status), requestDate, startDate, finishDate);
+
+                transactions.add(transaction);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
     }
 }
