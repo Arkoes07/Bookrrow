@@ -65,19 +65,29 @@ public class DatabaseTransaction extends DatabaseConnection {
         return book;
     }
 
-//    public Transaction borrow(int book_id, int borrower_id) throws SQLException {
-//        int id = 0;
-//
-//        PreparedStatement st = getConn().prepareStatement("INSERT INTO transaction (book_id, borrower_id) values (?,?) RETURNING transaction_id;");
-//        st.setInt(1,book_id);
-//        st.setInt(2, borrower_id);
-//        ResultSet rs = st.executeQuery();
-//        while (rs.next()){
-//            id = rs.getInt("transaction_id");
-//        }
-//        Transaction transaction = new Transaction(id, book_id, borrower_id);
-//        st.close();
-//        rs.close();
-//        return transaction;
-//    }
+    public Transaction borrow(int book_id, int borrower_id) {
+        int id = 0;
+        Transaction transaction = null;
+        PreparedStatement st = null;
+        try {
+            st = getConn().prepareStatement("INSERT INTO transaction (book_id, borrower_id) values (?,?) RETURNING transaction_id;");
+            st.setInt(1,book_id);
+            st.setInt(2, borrower_id);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()){
+                id = rs.getInt("transaction_id");
+            }
+            Book book = getBook(book_id);
+            Consumer consumer = getConsumer(borrower_id);
+            transaction = new Transaction(id, book, consumer);
+            st.close();
+            rs.close();
+            return transaction;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transaction;
+    }
+
+
 }

@@ -17,10 +17,13 @@ public class TransactionController {
     @RequestMapping(value="/borrow", method = RequestMethod.POST)
     public Transaction borrow(@RequestParam(value="book_id") int book_id,
                               @RequestParam(value="borrower_id") int borrower_id
-    ) throws SQLException {
+    ) {
         dt.connect();
         Transaction transaction = dt.borrow(book_id, borrower_id);
         dt.disconnect();
         return transaction;
     }
+
+//    @RequestMapping(value = "/reject", method = RequestMethod.POST)
+//    public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id)
 }
