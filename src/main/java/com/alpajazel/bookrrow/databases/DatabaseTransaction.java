@@ -1,17 +1,13 @@
 package com.alpajazel.bookrrow.databases;
 
-import com.alpajazel.bookrrow.enums.BookStatus;
-import com.alpajazel.bookrrow.enums.BookType;
-import com.alpajazel.bookrrow.enums.Genre;
-import com.alpajazel.bookrrow.enums.Language;
+import com.alpajazel.bookrrow.enums.*;
 import com.alpajazel.bookrrow.exceptions.BookAlreadyExistsException;
 import com.alpajazel.bookrrow.models.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;import java.util.ArrayList;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class DatabaseTransaction extends DatabaseConnection {
     private Consumer getConsumer(int consumerId) throws SQLException {
@@ -36,6 +32,58 @@ public class DatabaseTransaction extends DatabaseConnection {
         rs.close();
         return consumer;
     }
+
+    public ArrayList<Transaction> getIncomingRequest (int id) throws SQLException {
+        PreparedStatement stmt = null;
+        String sql = "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date"+
+                " from transaction natural join book "+
+                "where transaction_status='PENDING' and owner_id=?;";
+
+        stmt = getConn().prepareStatement(sql);
+        stmt.setInt(1,id);
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        ResultSet resultSet = stmt.executeQuery();
+        while (resultSet.next()){
+            int transactionId = resultSet.getInt("transaction_id");
+
+            int bookId = resultSet.getInt("book_id");
+            Book book = getBook(bookId);
+
+            int ownerId = resultSet.getInt("owner_id");
+
+            int borrowerId = resultSet.getInt("borrower_id");
+            Consumer borrower = getConsumer(borrowerId);
+
+            String transactionStatusRtv = resultSet.getString("transaction_status");
+            TransactionStatus transactionStatus = TransactionStatus.valueOf(transactionStatusRtv);
+
+            Date requestDateRtv = resultSet.getDate("request_date");
+            Calendar requestDate = new GregorianCalendar();
+            requestDate.setTime(requestDateRtv);
+
+            Date startDateRtv = resultSet.getDate("start_date");
+            Calendar startDate = new GregorianCalendar();
+            if(startDateRtv!=null){
+                startDate.setTime(startDateRtv);
+            }else {
+                startDate = null;
+            }
+
+            Date finishDateRtv = resultSet.getDate("finish_date");
+            Calendar finishDate = new GregorianCalendar();
+            if(finishDateRtv!=null){
+                finishDate.setTime(finishDateRtv);
+            }else {
+                finishDate = null;
+            }
+
+            Transaction transaction = new Transaction(transactionId,book,borrower,transactionStatus,requestDate,startDate,finishDate);
+            transactions.add(transaction);
+        }
+        return transactions;
+    }
+
+
 
     private Book getBook(int book_id) throws SQLException {
         Book book = null;

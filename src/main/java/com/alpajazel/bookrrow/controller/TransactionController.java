@@ -7,6 +7,7 @@ import com.alpajazel.bookrrow.models.Transaction;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -24,6 +25,21 @@ public class TransactionController {
         return transaction;
     }
 
+    @RequestMapping(value="/incomingrequest/{id}", method = RequestMethod.GET)
+    public ArrayList<Transaction> getIncomingRequest (@PathVariable int id){
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        dt.connect();
+        try {
+            transactions = dt.getIncomingRequest(id);
+            return transactions;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+//    @RequestMapping(value = "/reject", method = RequestMethod.POST)
+//    public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id)
     @RequestMapping(value = "/reject", method = RequestMethod.POST)
     public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id){
         dt.connect();

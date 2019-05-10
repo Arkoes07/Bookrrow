@@ -1,9 +1,17 @@
 package com.alpajazel.bookrrow.models;
 
+import com.alpajazel.bookrrow.enums.TransactionStatus;
+
+import java.util.Calendar;
+
 public class Transaction {
     private int id;
     private Book book;
     private Consumer borrower;
+    private TransactionStatus transactionStatus;
+    private Calendar requestDate;
+    private Calendar finishDate;
+    private Calendar borrowerDate;
 
     public Transaction(int id, Book book, Consumer borrower) {
         this.id = id;
@@ -11,27 +19,41 @@ public class Transaction {
         this.borrower = borrower;
     }
 
-    public int getId() {
-        return id;
+    public Transaction(int id, Book book, Consumer borrower, TransactionStatus transactionStatus, Calendar requestDate, Calendar finishDate, Calendar borrowerDate) {
+        this.id = id;
+        this.book = book;
+        this.borrower = borrower;
+        this.transactionStatus = transactionStatus;
+        this.requestDate = requestDate;
+        this.finishDate = finishDate;
+        this.borrowerDate = borrowerDate;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public int getId() {
+        return id;
     }
 
     public Book getBook() {
         return book;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
-    }
-
     public Consumer getBorrower() {
         return borrower;
     }
 
-    public void setBorrower(Consumer borrower) {
-        this.borrower = borrower;
+    public TransactionStatus getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public Calendar getRequestDate() {
+        return requestDate;
+    }
+
+    public Calendar getFinishDate() {
+        return finishDate;
+    }
+
+    public Calendar getBorrowerDate() {
+        return borrowerDate;
     }
 }
