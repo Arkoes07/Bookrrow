@@ -37,14 +37,14 @@ public class TransactionController {
         return transactions;
     }
 
-    @RequestMapping(value = "/outgoingrequest/{id}", method = RequestMethod.GET)
-    public ArrayList<Transaction> getOutgoingRequest(@PathVariable int id) {
-        ArrayList<Transaction> transactions = new ArrayList<>();
-        dt.connect();
-        transactions = dt.getOutgoingRequest(id);
-        dt.disconnect();
-        return transactions;
-    }
+//    @RequestMapping(value = "/outgoingrequest/{id}", method = RequestMethod.GET)
+//    public ArrayList<Transaction> getOutgoingRequest(@PathVariable int id) {
+//        ArrayList<Transaction> transactions = new ArrayList<>();
+//        dt.connect();
+//        transactions = dt.getOutgoingRequest(id);
+//        dt.disconnect();
+//        return transactions;
+//    }
 
     @RequestMapping(value = "/borrowed/{id}", method = RequestMethod.GET)
     public ArrayList<Transaction> getIncomingOngoing (@PathVariable int id) {
@@ -64,13 +64,13 @@ public class TransactionController {
         return transactions;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public Transaction getTransaction(@PathVariable int id) {
-        dt.connect();
-        Transaction transaction = dt.getTransaction(id);
-        dt.disconnect();
-        return transaction;
-    }
+//    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+//    public Transaction getTransaction(@PathVariable int id) {
+//        dt.connect();
+//        Transaction transaction = dt.getTransaction(id);
+//        dt.disconnect();
+//        return transaction;
+//    }
 
     @RequestMapping(value = "/reject", method = RequestMethod.POST)
     public Transaction reject(@RequestParam(value = "transaction_id") int transaction_id){
@@ -101,6 +101,15 @@ public class TransactionController {
         ArrayList<Transaction> transactions = new ArrayList<>();
         dt.connect();
         transactions = dt.getOutgoingHistory(borrower_id);
+        dt.disconnect();
+        return transactions;
+    }
+
+    @RequestMapping(value="/incominghistory/{owner_id}", method = RequestMethod.GET)
+    public ArrayList<Transaction> getIncomingHistory (@PathVariable int owner_id){
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        dt.connect();
+        transactions = dt.getIncomingHistory(owner_id);
         dt.disconnect();
         return transactions;
     }

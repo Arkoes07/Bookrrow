@@ -89,7 +89,7 @@ public class DatabaseTransaction extends DatabaseConnection {
     public ArrayList<Transaction> getIncomingOngoing(int id) {
         PreparedStatement stmt = null;
         String sql =
-                "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date" +
+                "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date " +
                         "from transaction natural join book " +
                         "where transaction_status='ONGOING' and owner_id=?;";
         try {
@@ -353,5 +353,57 @@ public class DatabaseTransaction extends DatabaseConnection {
             e.printStackTrace();
         }
         return transactions;
+    }
+
+    public ArrayList<Transaction> getIncomingHistory(int id){
+        PreparedStatement stmt = null;
+        ArrayList<Transaction> transactions = new ArrayList<>();
+        try {
+            stmt = getConn().prepareStatement("select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date from transaction natural join book where (transaction_status='REJECTED' OR transaction_status='FINISHED' ) and owner_id=?;");
+            stmt.setInt(1, id);
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()) {
+                int transactionId = resultSet.getInt("transaction_id");
+
+                int bookId = resultSet.getInt("book_id");
+                Book book = getBook(bookId);
+
+                int ownerId = resultSet.getInt("owner_id");
+
+                int borrowerId = resultSet.getInt("borrower_id");
+                Consumer borrower = getConsumer(borrowerId);
+
+                String transactionStatusRtv = resultSet.getString("transaction_status");
+                TransactionStatus transactionStatus = TransactionStatus.valueOf(transactionStatusRtv);
+
+                Date requestDateRtv = resultSet.getDate("request_date");
+                Calendar requestDate = new GregorianCalendar();
+                requestDate.setTime(requestDateRtv);
+
+                Date startDateRtv = resultSet.getDate("start_date");
+                Calendar startDate = new GregorianCalendar();
+                if (startDateRtv != null) {
+                    startDate.setTime(startDateRtv);
+                } else {
+                    startDate = null;
+                }
+
+                Date finishDateRtv = resultSet.getDate("finish_date");
+                Calendar finishDate = new GregorianCalendar();
+                if (finishDateRtv != null) {
+                    finishDate.setTime(finishDateRtv);
+                } else {
+                    finishDate = null;
+                }
+
+                Transaction transaction = new Transaction(transactionId, book, borrower, transactionStatus, requestDate, startDate, finishDate);
+                transactions.add(transaction);
+            }
+            stmt.close();
+            return transactions;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
