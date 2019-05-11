@@ -1,7 +1,7 @@
 package com.alpajazel.bookrrow.exceptions;
 
 
-public class UserAlreadyExistsException extends Exception {
+public class CustomerAlreadyExistsException extends Exception {
 
 //    public UserAlreadyExistsException(User user_input) {
 //        super("User email: ");

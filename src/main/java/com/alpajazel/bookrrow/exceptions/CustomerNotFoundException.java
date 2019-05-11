@@ -1,6 +1,6 @@
 package com.alpajazel.bookrrow.exceptions;
 
-public class UserNotFoundException extends Exception {
+public class CustomerNotFoundException extends Exception {
     private int user_error;
 //
 //    public UserNotFoundException(int customer_input) {
