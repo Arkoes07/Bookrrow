@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum BookStatus {
-    AVAILABLE("Fiction", "AVAILABLE"),
+    AVAILABLE("Available", "AVAILABLE"),
     NOTAVAILABLE("Not-Available", "NOTAVAILABLE");
 
     private String bookStatus;
