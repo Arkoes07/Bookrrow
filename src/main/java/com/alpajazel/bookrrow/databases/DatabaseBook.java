@@ -73,7 +73,8 @@ public class DatabaseBook extends DatabaseConnection {
         BookType bookType = BookType.valueOf(rs.getString("type"));
         BookStatus bookStatus = BookStatus.valueOf(rs.getString("book_status"));
         String genre = rs.getString("genre");
-        Consumer consumer = getConsumer(id);
+        int ownerId = rs.getInt("owner_id");
+        Consumer consumer = getConsumer(ownerId);
         Book book;
         if(bookType == BookType.FICTION){
             book = new Fiction(id, title, author, description, language, year, bookStatus, consumer, Genre.valueOf(genre));
@@ -143,22 +144,275 @@ public class DatabaseBook extends DatabaseConnection {
     }
 
     /**
-     * Get list of all Book objects in the book table in postgresql with specific type.
+     * Get list of all Book objects in the book table in postgresql with specific type and available.
      * List of Book objects are created by converting to an object for each row from the query result
      *
      * @param bookType will be specified in the SQL query to narrow down the result
-     * @return all books from book table which have the specified type as an array
+     * @return all books from book table which have the specified type and available as an array list
      * @since 2019-05-10
      */
     public ArrayList<Book> getAllBooksByType(BookType bookType) {
         try {
-            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE type = ? ORDER BY book_id");
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE type = ? AND book_status = 'AVAILABLE' ORDER BY book_id");
             st.setString(1,bookType.getKeyName());
             ResultSet rs = st.executeQuery();
             ArrayList<Book> books = generateListFromResultGroup(rs);
             st.close();
             rs.close();
             return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get list of all Book objects in the book table in postgresql with specific language and available.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param language will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have the specified language and available as an array list
+     * @since 2019-05-10
+     */
+    public ArrayList<Book> getAllBooksByLanguage(Language language) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE language = ? AND book_status = 'AVAILABLE' ORDER BY book_id");
+            st.setString(1,language.getKeyName());
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get list of all Book objects in the book table in postgresql with specific released year and available.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param year will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have the specified year and available as an array list
+     * @since 2019-05-10
+     */
+    public ArrayList<Book> getAllBooksByYear(int year) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE year = ? AND book_status = 'AVAILABLE' ORDER BY book_id");
+            st.setInt(1,year);
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get list of all Book objects in the book table in postgresql with specific genre and available.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param genre will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have the specified genre and available as an array list
+     * @since 2019-05-10
+     */
+    public ArrayList<Book> getAllBooksByGenre(Genre genre) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE genre = ? AND book_status = 'AVAILABLE' ORDER BY book_id");
+            st.setString(1,genre.getKeyName());
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get list of all Book objects in the book table in postgresql that have an author name like parameter given and available.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param author will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have author name like parameter given and available as an array list
+     * @since 2019-05-10
+     */
+    public ArrayList<Book> getAllBooksByAuthor(String author) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE author LIKE ? AND book_status = 'AVAILABLE' ORDER BY book_id");
+            st.setString(1,"%"+author+"%");
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get list of all Book objects in the book table in postgresql with specific owner id.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param ownerId will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have the specified owner id as an array list
+     * @since 2019-05-10
+     */
+    public ArrayList<Book> getAllBooksByOwner(int ownerId) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE owner_id = ? ORDER BY book_id");
+            st.setInt(1,ownerId);
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get Book object from the book table in postgresql with specific book id.
+     * Book object are created by converting to an object from the row provided by the query result
+     *
+     * @param bookId wiil be specified in the SQL query to narrow down the result to only one book
+     * @return Book object from book table that have the specified book id
+     * @since 2019-05-10
+     */
+    public Book getBookById(int bookId){
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE book_id = ?");
+            st.setInt(1,bookId);
+            ResultSet rs = st.executeQuery();
+            if(!rs.isBeforeFirst()){
+                st.close();
+                return null;
+            }
+            Book book = null;
+            while (rs.next()){
+                book = generateBookFromCurrentResult(rs);
+            }
+            st.close();
+            rs.close();
+            return book;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Insert NonFiction Book Object to the book table in postgresql
+     *
+     * @param title the title of the book
+     * @param author the author of the book
+     * @param description the description of the book
+     * @param language the language of the book
+     * @param year the released year of the book
+     * @param ownerId the id of the owner of the book
+     * @return the Book object that successfully inserted to the book table in postgresql
+     * @since 2019-05-11
+     */
+    public Book insertBook(String title, String author, String description, Language language, int year, int ownerId){
+        try {
+            PreparedStatement st = getConn().prepareStatement("INSERT INTO book (title, author, description, language, year, type, genre, owner_id) VALUES (?, ?, ?, ?, ?, 'NONFICTION', null, ?) RETURNING book_id, book_status");
+            st.setString(1,title);
+            st.setString(2,author);
+            st.setString(3,description);
+            st.setString(4,language.getKeyName());
+            st.setInt(5,year);
+            st.setInt(6,ownerId);
+            ResultSet rs = st.executeQuery();
+            int id = 0;
+            BookStatus bookStatus = null;
+            while(rs.next()){
+                id = rs.getInt(1);
+                bookStatus = BookStatus.valueOf(rs.getString(2));
+            }
+            Consumer consumer = getConsumer(ownerId);
+            rs.close();
+            st.close();
+            return new NonFiction(id, title, author, description, language, year, bookStatus, consumer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Insert Fiction Book Object to the book table in postgresql
+     *
+     * @param title the title of the book
+     * @param author the author of the book
+     * @param description the description of the book
+     * @param language the language of the book
+     * @param year the released year of the book
+     * @param genre the genre of the book
+     * @param ownerId the id of the owner of the book
+     * @return the Book object that successfully inserted to the book table in postgresql
+     * @since 2019-05-11
+     */
+    public Book insertBook(String title, String author, String description, Language language, int year, Genre genre, int ownerId){
+        try {
+            PreparedStatement st = getConn().prepareStatement("INSERT INTO book (title, author, description, language, year, type, genre, owner_id) VALUES (?, ?, ?, ?, ?, 'FICTION', ?, ?) RETURNING book_id, book_status");
+            st.setString(1,title);
+            st.setString(2,author);
+            st.setString(3,description);
+            st.setString(4,language.getKeyName());
+            st.setInt(5,year);
+            st.setString(6, genre.getKeyName());
+            st.setInt(7,ownerId);
+            ResultSet rs = st.executeQuery();
+            int id = 0;
+            BookStatus bookStatus = null;
+            while(rs.next()){
+                id = rs.getInt(1);
+                bookStatus = BookStatus.valueOf(rs.getString(2));
+            }
+            Consumer consumer = getConsumer(ownerId);
+            rs.close();
+            st.close();
+            return new Fiction(id, title, author, description, language, year, bookStatus, consumer, genre);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * update description of one book with the specified book id
+     *
+     * @param bookId the id of the book to select one book to be updated
+     * @param description the new description of the book
+     * @return the Book object that successfully updated to the book table in postgresql
+     */
+    public Book editDescriptionOfBook(int bookId, String description){
+        try {
+            PreparedStatement st = getConn().prepareStatement("UPDATE book SET description = ? WHERE book_id = ? RETURNING *");
+            st.setString(1,description);
+            st.setInt(2,bookId);
+            ResultSet rs = st.executeQuery();
+            if(!rs.isBeforeFirst()){
+                st.close();
+                return null;
+            }
+            Book book = null;
+            while (rs.next()){
+                book = generateBookFromCurrentResult(rs);
+            }
+            rs.close();
+            st.close();
+            return book;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
