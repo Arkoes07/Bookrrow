@@ -144,6 +144,29 @@ public class DatabaseBook extends DatabaseConnection {
     }
 
     /**
+     * Get list of all Book objects in the book table in postgresql that have a title like parameter given and available.
+     * List of Book objects are created by converting to an object for each row from the query result
+     *
+     * @param title will be specified in the SQL query to narrow down the result
+     * @return all books from book table which have title like parameter given and available as an array list
+     * @since 2019-05-11
+     */
+    public ArrayList<Book> getAllBooksByTitle(String title) {
+        try {
+            PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE title LIKE ? AND book_status = 'AVAILABLE' ORDER BY book_id");
+            st.setString(1,"%"+title+"%");
+            ResultSet rs = st.executeQuery();
+            ArrayList<Book> books = generateListFromResultGroup(rs);
+            st.close();
+            rs.close();
+            return books;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
      * Get list of all Book objects in the book table in postgresql with specific type and available.
      * List of Book objects are created by converting to an object for each row from the query result
      *
@@ -395,12 +418,42 @@ public class DatabaseBook extends DatabaseConnection {
      * @param bookId the id of the book to select one book to be updated
      * @param description the new description of the book
      * @return the Book object that successfully updated to the book table in postgresql
+     * @since 2019-05-11
      */
     public Book editDescriptionOfBook(int bookId, String description){
         try {
             PreparedStatement st = getConn().prepareStatement("UPDATE book SET description = ? WHERE book_id = ? RETURNING *");
             st.setString(1,description);
             st.setInt(2,bookId);
+            ResultSet rs = st.executeQuery();
+            if(!rs.isBeforeFirst()){
+                st.close();
+                return null;
+            }
+            Book book = null;
+            while (rs.next()){
+                book = generateBookFromCurrentResult(rs);
+            }
+            rs.close();
+            st.close();
+            return book;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Delete a book with specified book id
+     *
+     * @param bookId the id of the book to be deleted
+     * @return the Book Object that successfully deleted from the book table in postgresql
+     * @since 2019-05-12
+     */
+    public Book deleteBook(int bookId){
+        try {
+            PreparedStatement st = getConn().prepareStatement("DELETE FROM book WHERE book_id = ? AND book_status = 'AVAILABLE' RETURNING *");
+            st.setInt(1,bookId);
             ResultSet rs = st.executeQuery();
             if(!rs.isBeforeFirst()){
                 st.close();
