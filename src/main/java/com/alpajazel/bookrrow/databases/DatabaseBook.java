@@ -4,6 +4,7 @@ import com.alpajazel.bookrrow.enums.BookStatus;
 import com.alpajazel.bookrrow.enums.BookType;
 import com.alpajazel.bookrrow.enums.Genre;
 import com.alpajazel.bookrrow.enums.Language;
+import com.alpajazel.bookrrow.exceptions.BookNotFoundException;
 import com.alpajazel.bookrrow.models.Book;
 import com.alpajazel.bookrrow.models.Consumer;
 import com.alpajazel.bookrrow.models.Fiction;
@@ -312,14 +313,14 @@ public class DatabaseBook extends DatabaseConnection {
      * @return Book object from book table that have the specified book id
      * @since 2019-05-10
      */
-    public Book getBookById(int bookId){
+    public Book getBookById(int bookId) throws BookNotFoundException {
         try {
             PreparedStatement st = getConn().prepareStatement("SELECT * FROM book WHERE book_id = ?");
             st.setInt(1,bookId);
             ResultSet rs = st.executeQuery();
             if(!rs.isBeforeFirst()){
                 st.close();
-                return null;
+                throw new BookNotFoundException(bookId);
             }
             Book book = null;
             while (rs.next()){
@@ -420,7 +421,7 @@ public class DatabaseBook extends DatabaseConnection {
      * @return the Book object that successfully updated to the book table in postgresql
      * @since 2019-05-11
      */
-    public Book editDescriptionOfBook(int bookId, String description){
+    public Book editDescriptionOfBook(int bookId, String description) throws BookNotFoundException {
         try {
             PreparedStatement st = getConn().prepareStatement("UPDATE book SET description = ? WHERE book_id = ? RETURNING *");
             st.setString(1,description);
@@ -428,7 +429,7 @@ public class DatabaseBook extends DatabaseConnection {
             ResultSet rs = st.executeQuery();
             if(!rs.isBeforeFirst()){
                 st.close();
-                return null;
+                throw new BookNotFoundException(bookId);
             }
             Book book = null;
             while (rs.next()){
@@ -450,14 +451,14 @@ public class DatabaseBook extends DatabaseConnection {
      * @return the Book Object that successfully deleted from the book table in postgresql
      * @since 2019-05-12
      */
-    public Book deleteBook(int bookId){
+    public Book deleteBook(int bookId) throws BookNotFoundException {
         try {
             PreparedStatement st = getConn().prepareStatement("DELETE FROM book WHERE book_id = ? AND book_status = 'AVAILABLE' RETURNING *");
             st.setInt(1,bookId);
             ResultSet rs = st.executeQuery();
             if(!rs.isBeforeFirst()){
                 st.close();
-                return null;
+                throw new BookNotFoundException(bookId);
             }
             Book book = null;
             while (rs.next()){

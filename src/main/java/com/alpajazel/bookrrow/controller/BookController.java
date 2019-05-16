@@ -4,6 +4,7 @@ import com.alpajazel.bookrrow.databases.DatabaseBook;
 import com.alpajazel.bookrrow.enums.BookType;
 import com.alpajazel.bookrrow.enums.Genre;
 import com.alpajazel.bookrrow.enums.Language;
+import com.alpajazel.bookrrow.exceptions.BookNotFoundException;
 import com.alpajazel.bookrrow.models.Book;
 import org.springframework.web.bind.annotation.*;
 
@@ -164,7 +165,13 @@ public class BookController {
     @RequestMapping("/{book_id}")
     public Book getBookById(@PathVariable int book_id){
         db.connect();
-        Book book = db.getBookById(book_id);
+        Book book;
+        try {
+            book = db.getBookById(book_id);
+        } catch (BookNotFoundException e) {
+            System.err.println(e.getExMessage());
+            return null;
+        }
         db.disconnect();
         return book;
     }
@@ -238,7 +245,13 @@ public class BookController {
                                       @RequestParam (value = "description") String description
                                       ){
         db.connect();
-        Book book = db.editDescriptionOfBook(bookId, description);
+        Book book;
+        try {
+            book = db.editDescriptionOfBook(bookId, description);
+        } catch (BookNotFoundException e) {
+            System.err.println(e.getExMessage());
+            return null;
+        }
         db.disconnect();
         return book;
     }
@@ -253,7 +266,13 @@ public class BookController {
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Book deleteABook(@RequestParam (value = "book_id") int bookId ){
         db.connect();
-        Book book = db.deleteBook(bookId);
+        Book book;
+        try {
+            book = db.deleteBook(bookId);
+        } catch (BookNotFoundException e) {
+            System.err.println(e.getExMessage());
+            return null;
+        }
         db.disconnect();
         return book;
     }

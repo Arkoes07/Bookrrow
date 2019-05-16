@@ -22,7 +22,7 @@ public class DatabaseConnection {
         try {
             String jdbURL = "jdbc:postgresql://localhost:5432/bookrrow";
             String username = "postgres";
-            String password = "qwerty13";
+            String password = "";
             conn = DriverManager.getConnection(jdbURL, username, password);
             System.out.println("Database Connection Established");
         } catch (SQLException e) {
