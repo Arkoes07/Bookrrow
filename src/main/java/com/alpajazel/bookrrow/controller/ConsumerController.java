@@ -4,6 +4,9 @@ import com.alpajazel.bookrrow.databases.DatabaseConsumer;
 import com.alpajazel.bookrrow.models.Consumer;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Controller Class that handle request that related to DatabaseConsumer class
  *
@@ -37,12 +40,33 @@ public class ConsumerController {
                                      @RequestParam(value ="email") String email,
                                      @RequestParam(value ="phonenum") String phoneNumber
                             ){
+        /*
+        Tidak boleh diawali dengan simbol
+        Sebelum '@', minimal terdapat satu karakter, dua simbol tidak boleh berurutan
+        Tepat sebelum '@' tidak boleh simbol
+        Setelah '@', boleh terdapat [a-zA-Z0-9-] sebanyak banyaknya hingga '.'
+        Setelah '.', jika ada titik lain setelahnya, maka diantara dua titik boleh memiliki [a-zA-Z0-9-] sebanyak-banyaknya
+        Setelah '.', jika tidak ada titik lain, maka [a-zA-Z] minimal 2 dan maximal 7
+         */
+        String pattern = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(email);
+        if(!m.find( )){
+            return null;
+        }
+
+        // Regex password minimal 6 karakter, terdapat Huruf kapital dan non kapital.
+        String patternPwd = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{6,}$";
+        Pattern rPwd = Pattern.compile(patternPwd);
+        Matcher mPwd = rPwd.matcher(password);
+        if(!mPwd.find( )){
+            return null;
+        }
+
         dc.connect();
         Consumer consumer = dc.registerConsumer(username,password,name,email,phoneNumber);
         dc.disconnect();
         return consumer;
-
-
     }
 
     /**
@@ -82,7 +106,5 @@ public class ConsumerController {
         Consumer consumer = dc.updateConsumer(password,name,phoneNumber,consumerID);
         dc.disconnect();
         return consumer;
-
     }
-
 }
