@@ -137,4 +137,15 @@ public abstract class Book {
     public Consumer getOwner() {
         return owner;
     }
+
+    /**
+     * Genereate string that contains the information of this object
+     * Override from java Object class
+     * Abstract to make any subclass must implement this method
+     *
+     * @return string that contains the information of this object
+     * @since 2019-05-17
+     */
+    @Override
+    abstract public String toString();
 }

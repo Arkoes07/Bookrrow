@@ -31,4 +31,21 @@ public class NonFiction extends Book {
     }
 
 
+    /**
+     * Genereate string that contains the information of this object
+     *
+     * @return string that contains the information of this object
+     * @since 2019-05-17
+     */
+    @Override
+    public String toString() {
+        return  "id : "             + this.getId() +
+                "title : "          + this.getTitle() +
+                "author : "         + this.getAuthor() +
+                "description : "    + this.getDescription() +
+                "language : "       + this.getLanguage() +
+                "year : "           + this.getYear() +
+                "status : "         + this.getStatus() +
+                "owner : "          + this.getOwner();
+    }
 }
