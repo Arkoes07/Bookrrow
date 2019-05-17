@@ -14,7 +14,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+/**
+ * class to interact between java model and transaction data in PostgreSQL database
+ * this class extending DatabaseConnection class to get the JDBC initiated there
+ *
+ * @author DP Nala Krisnanda
+ * @version 1.0
+ * @since 2019-05-17
+ */
 public class DatabaseTransaction extends DatabaseConnection {
+    /**
+     * get consumer data with specified id from the database
+     * @param consumerId is the id of consumer which the data want to be search on the database
+     * @return the consumer with the specified id from the database
+     * @throws SQLException when there are troubles in the connection to the database
+     */
     private Consumer getConsumer(int consumerId) throws SQLException {
         Consumer consumer = null;
 
@@ -38,6 +52,12 @@ public class DatabaseTransaction extends DatabaseConnection {
         return consumer;
     }
 
+    /**
+     * get book data from the database with specified book id
+     * @param book_id is the id of book which the data want to be search on the database
+     * @return book with specified book id
+     * @throws SQLException when there are troubles in the connection to the database
+     */
     private Book getBook(int book_id) throws SQLException {
         Book book = null;
         int year = 0, owner_id = 0;
@@ -65,6 +85,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         return book;
     }
 
+    /**
+     * get a transaction with specified transaction id
+     * @param id is the transaction id which the data want to be search on the database
+     * @return the transaction with specified transaction id
+     */
     public Transaction getTransaction(int id) {
         PreparedStatement stmt = null;
         String sql = "select * from transaction where transaction_id = ?";
@@ -114,6 +139,12 @@ public class DatabaseTransaction extends DatabaseConnection {
         return null;
     }
 
+    /**
+     * get all transactions with status pending which book involved is owned by specified consumer id
+     * @param id is the consumer id which owned the book
+     * @return list of transactions with status pending which book involved is owned by specified consumer id
+     * @throws SQLException when there are troubles in the connection to the database
+     */
     public ArrayList<Transaction> getIncomingRequest(int id) throws SQLException {
         PreparedStatement stmt = null;
         String sql = "select transaction_id,book_id,owner_id,borrower_id,transaction_status,request_date,start_date,finish_date" +
@@ -165,6 +196,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transactions;
     }
 
+    /**
+     * get all transactions with status pending which the borrower id is equal to specified consumer id
+     * @param id is the consumer id which have a role as borrower in the transaction database
+     * @return all transactions with status pending which the borrower id is equal to specified consumer id
+     */
     public ArrayList<Transaction> getOutgoingRequest(int id) {
         PreparedStatement stmt = null;
         String sql = "select * from transaction where borrower_id = ? and transaction_status='PENDING';";
@@ -216,6 +252,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         }
     }
 
+    /**
+     * get all transactions with status ongoing which book involved is owned by specified consumer id
+     * @param id is the consumer id which owned the book
+     * @return list of transactions with status ongoing which book involved is owned by specified consumer id
+     */
     public ArrayList<Transaction> getIncomingOngoing(int id) {
         PreparedStatement stmt = null;
         String sql =
@@ -272,6 +313,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         }
     }
 
+    /**
+     * get all transactions with status ongoing which the borrower id is equal to specified consumer id
+     * @param id is the consumer id which have a role as borrower in the transaction database
+     * @return all transactions with status ongoing which the borrower id is equal to specified consumer id
+     */
     public ArrayList<Transaction> getOutgoingOngoing(int id) {
         PreparedStatement stmt = null;
         String sql = "select * from transaction where borrower_id = ? and transaction_status='ONGOING';";
@@ -323,6 +369,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         }
     }
 
+    /**
+     * get all transactions with status rejected or finished which book involved is owned by specified consumer id
+     * @param id is the consumer id which owned the book
+     * @return all transactions with status rejected or finished which book involved is owned by specified consumer id
+     */
     public ArrayList<Transaction> getIncomingHistory(int id) {
         PreparedStatement stmt = null;
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -375,6 +426,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         }
     }
 
+    /**
+     * get all transactions with status finished or rejected which the borrower id is equal to specified consumer id
+     * @param borrower_id is the consumer id which have a role as borrower in the transaction database
+     * @return all transactions with status finished or rejected which the borrower id is equal to specified consumer id
+     */
     public ArrayList<Transaction> getOutgoingHistory(int borrower_id) {
         ArrayList<Transaction> transactions = new ArrayList<>();
         int id = 0, book_id = 0, transaction_id = 0;
@@ -422,6 +478,12 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transactions;
     }
 
+    /**
+     * creating a new transaction with inserting new data to the database
+     * @param book_id is the id of book involved in the transaction
+     * @param borrower_id is the if of customer having a role as borrower in the transaction
+     * @return the transaction inserted to the database
+     */
     public Transaction borrow(int book_id, int borrower_id) {
         int id = 0;
         Transaction transaction = null;
@@ -446,6 +508,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transaction;
     }
 
+    /**
+     * change the status of a transaction with specified transaction id from pending to reject
+     * @param transaction_id is the transaction id which the status want to be changed
+     * @return the transaction which status changed
+     */
     public Transaction reject(int transaction_id) {
         int id = 0, book_id = 0, borrower_id = 0;
         Transaction transaction = null;
@@ -467,6 +534,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transaction;
     }
 
+    /**
+     * change the status of a transaction with specified transaction id from pending to ongoing
+     * @param transaction_id is the transaction id which the status want to be changed
+     * @return the transaction which status changed
+     */
     public Transaction accept(int transaction_id) {
         int id = 0, book_id = 0, borrower_id = 0;
         Transaction transaction = null;
@@ -488,6 +560,11 @@ public class DatabaseTransaction extends DatabaseConnection {
         return transaction;
     }
 
+    /**
+     * change the status of a transaction with specified transaction id from ongoing to finished
+     * @param transaction_id is the transaction id which the status want to be changed
+     * @return the transaction which status changed
+     */
     public Transaction finish(int transaction_id) {
         int id = 0, book_id = 0, borrower_id = 0;
         Transaction transaction = null;
