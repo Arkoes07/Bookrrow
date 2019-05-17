@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  * Enum class for specifying status of a transaction
  *
  * pending  : book is requested from borrower to owner
- * rejected : borrow request is reject by the the owner of the book
- * ongoing  : borrow request is accepted by the the owner of the book
- * finished : transaction is marked as finish by the owner of the book
+ * rejected : borrow request is reject by owner of the book
+ * ongoing  : borrow request is accepted by owner of the book
+ * finished : transaction is marked as finish by owner of the book
  *
  * @author DP Nala Krisnanda
  * @version 1.0
